@@ -79,40 +79,37 @@
         }
 
         @{
+            List<DateTime> dates = new List<DateTime>();
+            
             //previous month days
             for (int i = firstDayofMonth; i > 0; i--)
             {
-                int day = lastDateofLastMonth - i + 1;
-                var date = prevMonthDate.AddDays(day - 1);
-                string strDate = date.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
-
-                <div class="day inactive" data-date="@strDate">
-                    @day @monthNames[date.Month]
-                </div>
+                var date = prevMonthDate.AddDays(lastDateofLastMonth - i);
+                dates.Add(date);
             }
 
             //current month days
             for (int i = 1; i <= lastDateofMonth; i++)
             {
-                int day = i;
-                var date = baseDate.AddDays(day - 1);
-                bool isActive = now == date;
-                string strDate = date.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
-
-                <div class="day @(isActive ? "active" : null)" data-date="@strDate">
-                    @day
-                </div>
+                var date = baseDate.AddDays(i - 1);
+                dates.Add(date);
             }
 
             //next month days
             for (int i = lastDayofMonth; i < 6; i++)
             {
-                int day = i - lastDayofMonth + 1;
-                var date = nextMonthDate.AddDays(day - 1);
+                var date = nextMonthDate.AddDays(i - lastDayofMonth);
+                dates.Add(date);
+            }
+
+            foreach (var date in dates)
+            {
+                bool isActive = now == date;
+                bool isDisabled = baseDate.Month != date.Month;
                 string strDate = date.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
 
-                <div class="day inactive" data-date="@strDate">
-                    @day @monthNames[date.Month]
+                <div class="day @(isActive ? "active" : null) @(isDisabled ? "inactive" : null)" data-date="@strDate">
+                    @date.Day @(monthNames[date.Month])
                 </div>
             }
         }
