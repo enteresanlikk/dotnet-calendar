@@ -1,0 +1,120 @@
+﻿@using System.Globalization;
+@{
+    Dictionary<int, string> weekNames = new Dictionary<int, string>()
+    {
+        { 0, "Pazar" },
+        { 1, "Pazartesi" },
+        { 2, "Salı" },
+        { 3, "Çarşamba" },
+        { 4, "Perşembe" },
+        { 5, "Cuma" },
+        { 6, "Cumartesi" },
+    };
+
+    Dictionary<int, string> monthNames = new Dictionary<int, string>()
+    {
+        { 1, "Ocak" },
+        { 2, "Şubat" },
+        { 3, "Mart" },
+        { 4, "Nisan" },
+        { 5, "Mayıs" },
+        { 6, "Haziran" },
+        { 7, "Temmuz" },
+        { 8, "Ağustos" },
+        { 9, "Eylül" },
+        { 10, "Ekim" },
+        { 11, "Kasım" },
+        { 12, "Aralık" }
+    };
+
+    var _now = DateTime.Now;
+    var now = new DateTime(_now.Year, _now.Month, _now.Day);
+
+    int month = ViewBag.Month;
+    int year = ViewBag.Year;
+
+    var baseDate = new DateTime(year, month, 1);
+    var prevMonthDate = baseDate.AddMonths(-1);
+    var nextMonthDate = baseDate.AddMonths(1);
+
+    var firstDayofMonth = (int)baseDate.DayOfWeek;
+
+    var lastDateofMonth = DateTime.DaysInMonth(year, month);
+
+    var lastDayofMonth = (int)new DateTime(year, month, lastDateofMonth).DayOfWeek;
+
+    var lastDateofLastMonth = DateTime.DaysInMonth(prevMonthDate.Year, prevMonthDate.Month);
+
+    string title = $"{monthNames[month]} {year}";
+
+    ViewData["Title"] = $"{title} - Ana Sayfa";
+}
+
+<section class="calendar">
+    <header class="calendar-header">
+        <section class="calendar-header--left">
+            <h2 class="calendar-date">
+                @(monthNames[month]) @(year)
+            </h2>
+        </section>
+        <section class="calendar-header--right">
+            <a href="@Url.Action("Index", "Home", new { month = prevMonthDate.Month, year = prevMonthDate.Year })" class="button prev" title="Önceki Ay">
+                &lArr;
+            </a>
+            <a href="@Url.Action("Index", "Home", new { month = now.Month, year = now.Year })" class="button today" title="Bugün">
+                Bugün
+            </a>
+            <a href="@Url.Action("Index", "Home", new { month = nextMonthDate.Month, year = nextMonthDate.Year })" class="button next" title="Sonraki Ay">
+                &rArr;
+            </a>
+        </section>
+    </header>
+
+    <section class="calendar-content">
+        @foreach (var week in weekNames)
+        {
+            <div class="week" data-key="@week.Key">
+                @Html.Raw(week.Value)
+            </div>
+        }
+
+        @{
+            //previous month days
+            for (int i = firstDayofMonth; i > 0; i--)
+            {
+                int day = lastDateofLastMonth - i + 1;
+                var date = prevMonthDate.AddDays(day - 1);
+                string strDate = date.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+                <div class="day inactive" data-date="@strDate">
+                    @day @monthNames[date.Month]
+                </div>
+            }
+
+            //current month days
+            for (int i = 1; i <= lastDateofMonth; i++)
+            {
+                int day = i;
+                var date = baseDate.AddDays(day - 1);
+                bool isActive = now == date;
+                string strDate = date.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+                <div class="day @(isActive ? "active" : null)" data-date="@strDate">
+                    @day
+                </div>
+            }
+
+            //next month days
+            for (int i = lastDayofMonth; i < 6; i++)
+            {
+                int day = i - lastDayofMonth + 1;
+                var date = nextMonthDate.AddDays(day - 1);
+                string strDate = date.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+                <div class="day inactive" data-date="@strDate">
+                    @day @monthNames[date.Month]
+                </div>
+            }
+        }
+    </section>
+</section>
